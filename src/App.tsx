@@ -16,13 +16,8 @@ export default function App() {
 
   return (
     <div className="h-screen bg-gray-950 text-gray-100 flex flex-col overflow-hidden">
-      <header className="border-b border-gray-800 px-6 py-4 flex items-center justify-between shrink-0">
-        <div>
-          <h1 className="text-xl font-bold tracking-tight">WebGPU Bench</h1>
-          <p className="text-xs text-gray-500 mt-0.5">
-            GPU vs CPU benchmarks in the browser
-          </p>
-        </div>
+      <header className="border-b border-gray-800 px-6 py-3 flex items-center justify-between shrink-0">
+        <h1 className="text-2xl font-black tracking-tight">WebGPU Bench</h1>
         <span className="text-xs bg-gray-800 text-gray-400 px-2 py-1 rounded">
           v0.1.0
         </span>
@@ -35,9 +30,9 @@ export default function App() {
               key={tab.id}
               onClick={() => setActive(tab.id)}
               className={[
-                "px-4 py-3 text-sm font-medium border-b-2 transition-colors",
+                "px-5 py-3 text-base font-semibold border-b-2 transition-colors",
                 active === tab.id
-                  ? "border-indigo-500 text-indigo-400"
+                  ? "border-indigo-500 text-indigo-300"
                   : "border-transparent text-gray-500 hover:text-gray-300",
               ].join(" ")}
             >
@@ -48,9 +43,11 @@ export default function App() {
       </nav>
 
       <main className="flex-1 flex flex-col overflow-hidden">
-        {active === "particles" && <ParticleBenchmark />}
-        {active === "matrix" && <MatMulBenchmark />}
-        {active === "image" && <ImageBenchmark />}
+        <div className="flex-1 flex flex-col overflow-hidden max-w-6xl w-full mx-auto px-4">
+          {active === "particles" && <ParticleBenchmark />}
+          {active === "matrix" && <MatMulBenchmark />}
+          {active === "image" && <ImageBenchmark />}
+        </div>
       </main>
     </div>
   );

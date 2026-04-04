@@ -131,38 +131,52 @@ export default function MatMulBenchmark() {
       faster === "CPU"
         ? gpuRes.avgMs / cpuRes.avgMs
         : cpuRes.avgMs / gpuRes.avgMs;
-    const color =
-      faster === "GPU"
-        ? "text-emerald-300 border-emerald-900/40 bg-emerald-950/20"
-        : "text-amber-300 border-amber-900/40 bg-amber-950/20";
+    const isGpu = faster === "GPU";
+    const winnerMs = isGpu ? gpuRes.avgMs : cpuRes.avgMs;
+    const loserMs = isGpu ? cpuRes.avgMs : gpuRes.avgMs;
+    const cls = isGpu
+      ? "border-emerald-500 bg-emerald-950/50 text-emerald-100"
+      : "border-amber-500 bg-amber-950/50 text-amber-100";
     return (
       <div
-        className={`shrink-0 text-sm font-medium border rounded p-3 ${color}`}
+        className={`shrink-0 border-2 rounded-xl px-8 py-5 flex items-center gap-8 ${cls}`}
       >
-        {faster} was faster by{" "}
-        <span className="font-bold">{ratio.toFixed(2)}x</span> (avg{" "}
-        {msToPretty(faster === "GPU" ? gpuRes.avgMs : cpuRes.avgMs)} vs{" "}
-        {msToPretty(faster === "GPU" ? cpuRes.avgMs : gpuRes.avgMs)})
+        <div>
+          <div className="text-xs uppercase tracking-widest opacity-50 font-semibold">
+            Winner
+          </div>
+          <div className="text-5xl font-black tracking-tight mt-1">{faster}</div>
+        </div>
+        <div className="flex-1 text-center">
+          <div className="text-7xl font-black tabular-nums leading-none">
+            {ratio.toFixed(1)}
+            <span className="text-4xl">×</span>
+          </div>
+          <div className="text-sm opacity-60 font-semibold uppercase tracking-widest mt-2">
+            faster
+          </div>
+        </div>
+        <div className="text-right">
+          <div className="text-xs uppercase tracking-widest opacity-50 font-semibold mb-1">
+            Avg time
+          </div>
+          <div className="text-3xl font-bold tabular-nums">
+            {msToPretty(winnerMs)}
+          </div>
+          <div className="text-base opacity-60 mt-1">
+            vs {msToPretty(loserMs)}
+          </div>
+        </div>
       </div>
     );
   })();
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      <div className="px-6 py-3 border-b border-gray-800">
-        <h2 className="text-lg font-semibold">Matrix Multiply</h2>
-        <p className="text-xs text-gray-500 mt-1">
-          Runs CPU (JS) and GPU (WebGPU) back-to-back and shows results
-          side-by-side.
-        </p>
-      </div>
-
-      <div className="flex-1 overflow-hidden flex flex-col px-6 py-4 gap-3">
+      <div className="flex-1 overflow-hidden flex flex-col px-6 py-4 gap-4">
         <div className="flex flex-wrap gap-3 items-end shrink-0">
           <div className="flex flex-col">
-            <label className="text-xs text-gray-500 mb-1">
-              Matrix size (N×N)
-            </label>
+            <label className="text-xs text-gray-500 mb-1">Matrix size (N×N)</label>
             <select
               value={n}
               onChange={(e) => setN(parseInt(e.target.value, 10))}
@@ -180,14 +194,14 @@ export default function MatMulBenchmark() {
             <button
               disabled={running}
               onClick={() => runBoth(3)}
-              className="px-4 py-2 rounded bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-sm font-medium"
+              className="px-5 py-2.5 rounded bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-sm font-semibold"
             >
               Run both ×3
             </button>
             <button
               disabled={running}
               onClick={() => runBoth(10)}
-              className="px-4 py-2 rounded border border-gray-800 hover:border-gray-700 disabled:opacity-50 text-sm font-medium"
+              className="px-5 py-2.5 rounded border border-gray-700 hover:border-gray-600 disabled:opacity-50 text-sm font-semibold"
             >
               Run both ×10
             </button>
@@ -201,90 +215,61 @@ export default function MatMulBenchmark() {
         </div>
 
         {status && (
-          <div className="shrink-0 text-sm text-indigo-300 border border-indigo-900/40 bg-indigo-950/20 rounded p-3 flex items-center gap-2">
+          <div className="shrink-0 text-sm text-indigo-300 border border-indigo-900/40 bg-indigo-950/20 rounded-lg p-3 flex items-center gap-2">
             <span className="inline-block w-2 h-2 rounded-full bg-indigo-400 animate-pulse" />
             {status}
           </div>
         )}
 
         {error && (
-          <div className="shrink-0 text-sm text-red-400 border border-red-900/40 bg-red-950/30 rounded p-3">
+          <div className="shrink-0 text-sm text-red-400 border border-red-900/40 bg-red-950/30 rounded-lg p-3">
             {error}
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-3 shrink-0">
-          <div className="rounded border border-gray-800 bg-gray-900/30 p-4">
-            <div className="flex items-center justify-between">
-              <div className="text-sm font-semibold">JS (CPU)</div>
-              <div className="text-xs text-gray-500">typed arrays + tiled</div>
+        <div className="grid grid-cols-2 gap-4 shrink-0">
+          <div className="rounded-xl border border-gray-700 bg-gray-900/50 px-6 py-5">
+            <div className="text-xs uppercase tracking-widest text-gray-500 font-semibold">
+              CPU · JS
             </div>
-
-            <div className="mt-4 grid grid-cols-2 gap-3">
-              <div className="rounded border border-gray-800 bg-gray-950/30 p-3">
-                <div className="text-xs text-gray-500">Last</div>
-                <div className="text-xl font-semibold mt-1">
-                  {msToPretty(cpuRes.lastMs)}
-                </div>
-              </div>
-              <div className="rounded border border-gray-800 bg-gray-950/30 p-3">
-                <div className="text-xs text-gray-500">Avg</div>
-                <div className="text-xl font-semibold mt-1">
-                  {msToPretty(cpuRes.avgMs)}
-                </div>
-              </div>
+            <div className="text-sm text-gray-500 mt-0.5">
+              typed arrays + tiled
             </div>
-
             <div className="mt-4">
-              <div className="text-xs text-gray-500">Result sample</div>
-              <div className="text-xs text-gray-400 mt-2 font-mono break-all">
-                {cpuRes.sample.length
-                  ? cpuRes.sample.map((x) => x.toFixed(3)).join(", ")
-                  : "—"}
+              <div className="text-xs text-gray-500 font-medium uppercase tracking-wide">
+                Avg
               </div>
+              <div className="text-5xl font-black tabular-nums mt-1 text-gray-100">
+                {msToPretty(cpuRes.avgMs)}
+              </div>
+            </div>
+            <div className="mt-3 text-sm text-gray-500 tabular-nums">
+              Last: {msToPretty(cpuRes.lastMs)}
             </div>
           </div>
 
-          <div className="rounded border border-gray-800 bg-gray-900/30 p-4">
-            <div className="flex items-center justify-between">
-              <div className="text-sm font-semibold">WebGPU (GPU)</div>
-              <div className="text-xs text-gray-500">
-                compute shader + tiled
-              </div>
+          <div className="rounded-xl border border-gray-700 bg-gray-900/50 px-6 py-5">
+            <div className="text-xs uppercase tracking-widest text-gray-500 font-semibold">
+              GPU · WebGPU
             </div>
-
-            <div className="mt-4 grid grid-cols-2 gap-3">
-              <div className="rounded border border-gray-800 bg-gray-950/30 p-3">
-                <div className="text-xs text-gray-500">Last</div>
-                <div className="text-xl font-semibold mt-1">
-                  {msToPretty(gpuRes.lastMs)}
-                </div>
-              </div>
-              <div className="rounded border border-gray-800 bg-gray-950/30 p-3">
-                <div className="text-xs text-gray-500">Avg</div>
-                <div className="text-xl font-semibold mt-1">
-                  {msToPretty(gpuRes.avgMs)}
-                </div>
-              </div>
+            <div className="text-sm text-gray-500 mt-0.5">
+              compute shader + tiled
             </div>
-
             <div className="mt-4">
-              <div className="text-xs text-gray-500">Result sample</div>
-              <div className="text-xs text-gray-400 mt-2 font-mono break-all">
-                {gpuRes.sample.length
-                  ? gpuRes.sample.map((x) => x.toFixed(3)).join(", ")
-                  : "—"}
+              <div className="text-xs text-gray-500 font-medium uppercase tracking-wide">
+                Avg
               </div>
+              <div className="text-5xl font-black tabular-nums mt-1 text-gray-100">
+                {msToPretty(gpuRes.avgMs)}
+              </div>
+            </div>
+            <div className="mt-3 text-sm text-gray-500 tabular-nums">
+              Last: {msToPretty(gpuRes.lastMs)}
             </div>
           </div>
         </div>
 
         {winnerBanner}
-
-        <div className="shrink-0 text-xs text-gray-500 leading-relaxed">
-          Tip: if results are still similar, increase N (e.g. 1536–2048). At
-          small N, overhead and synchronization can dominate.
-        </div>
       </div>
     </div>
   );

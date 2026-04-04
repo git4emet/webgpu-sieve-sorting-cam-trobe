@@ -79,33 +79,45 @@ export default function ParticleBenchmark() {
     if (cpuFps === null || gpuFps === null) return null;
     const faster = gpuFps > cpuFps ? "GPU" : "CPU";
     const ratio = faster === "GPU" ? gpuFps / cpuFps : cpuFps / gpuFps;
-    const color =
-      faster === "GPU"
-        ? "text-emerald-300 border-emerald-900/40 bg-emerald-950/20"
-        : "text-amber-300 border-amber-900/40 bg-amber-950/20";
+    const isGpu = faster === "GPU";
+    const winnerFps = isGpu ? gpuFps : cpuFps;
+    const loserFps = isGpu ? cpuFps : gpuFps;
+    const cls = isGpu
+      ? "border-emerald-500 bg-emerald-950/50 text-emerald-100"
+      : "border-amber-500 bg-amber-950/50 text-amber-100";
     return (
       <div
-        className={`shrink-0 text-sm font-medium border rounded p-3 ${color}`}
+        className={`shrink-0 border-2 rounded-xl px-8 py-4 flex items-center gap-8 ${cls}`}
       >
-        {faster} was faster by{" "}
-        <span className="font-bold">{ratio.toFixed(2)}x</span> (
-        {faster === "GPU" ? gpuFps : cpuFps} FPS vs{" "}
-        {faster === "GPU" ? cpuFps : gpuFps} FPS)
+        <div>
+          <div className="text-xs uppercase tracking-widest opacity-50 font-semibold">
+            Winner
+          </div>
+          <div className="text-5xl font-black tracking-tight mt-1">{faster}</div>
+        </div>
+        <div className="flex-1 text-center">
+          <div className="text-7xl font-black tabular-nums leading-none">
+            {ratio.toFixed(1)}
+            <span className="text-4xl">×</span>
+          </div>
+          <div className="text-sm opacity-60 font-semibold uppercase tracking-widest mt-2">
+            faster
+          </div>
+        </div>
+        <div className="text-right">
+          <div className="text-xs uppercase tracking-widest opacity-50 font-semibold mb-1">
+            FPS
+          </div>
+          <div className="text-3xl font-bold tabular-nums">{winnerFps}</div>
+          <div className="text-base opacity-60 mt-1">vs {loserFps}</div>
+        </div>
       </div>
     );
   })();
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      <div className="px-6 py-3 border-b border-gray-800">
-        <h2 className="text-lg font-semibold">Particle Simulation</h2>
-        <p className="text-xs text-gray-500 mt-1">
-          CPU (Canvas2D) vs WebGPU (compute + instanced render). Same canvas
-          size (DPR-aware).
-        </p>
-      </div>
-
-      <div className="flex-1 overflow-hidden flex flex-col px-6 py-3 gap-3">
+      <div className="flex-1 overflow-hidden flex flex-col px-6 py-4 gap-4">
         <div className="flex flex-wrap items-end gap-3 shrink-0">
           <div className="flex flex-col">
             <label className="text-xs text-gray-500 mb-1">Particles</label>
@@ -129,14 +141,14 @@ export default function ParticleBenchmark() {
             <button
               onClick={startBoth}
               disabled={running}
-              className="px-4 py-2 rounded bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-sm font-medium"
+              className="px-5 py-2.5 rounded bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-sm font-semibold"
             >
               Run both
             </button>
             <button
               onClick={stopBoth}
               disabled={!running}
-              className="px-4 py-2 rounded border border-gray-800 hover:border-gray-700 disabled:opacity-50 text-sm font-medium"
+              className="px-5 py-2.5 rounded border border-gray-700 hover:border-gray-600 disabled:opacity-50 text-sm font-semibold"
             >
               Stop
             </button>
@@ -150,42 +162,66 @@ export default function ParticleBenchmark() {
         </div>
 
         {gpuErr && (
-          <div className="shrink-0 text-sm text-red-400 border border-red-900/40 bg-red-950/30 rounded p-3">
+          <div className="shrink-0 text-sm text-red-400 border border-red-900/40 bg-red-950/30 rounded-lg p-3">
             {gpuErr}
           </div>
         )}
 
-        <div className="flex-1 min-h-0 grid grid-cols-2 gap-3">
-          <div className="rounded border border-gray-800 bg-gray-900/30 p-3 flex flex-col min-h-0">
-            <div className="flex items-center justify-between shrink-0">
-              <div className="text-sm font-semibold">JS (CPU) — Canvas2D</div>
-              <div className="text-xs text-gray-500">FPS: {cpuFps ?? "—"}</div>
+        <div className="flex-1 min-h-0 grid grid-cols-2 gap-4">
+          <div className="rounded-xl border border-gray-700 bg-gray-900/50 p-4 flex flex-col min-h-0">
+            <div className="flex items-start justify-between shrink-0 mb-3">
+              <div>
+                <div className="text-xs uppercase tracking-widest text-gray-500 font-semibold">
+                  CPU · Canvas 2D
+                </div>
+                <div className="text-sm text-gray-500 mt-0.5">
+                  JS typed arrays
+                </div>
+              </div>
+              <div className="text-right">
+                <div
+                  className={`text-4xl font-black tabular-nums leading-none ${cpuFps !== null ? "text-gray-100" : "text-gray-700"}`}
+                >
+                  {cpuFps ?? "—"}
+                </div>
+                <div className="text-xs text-gray-500 font-semibold uppercase tracking-wide mt-0.5">
+                  FPS
+                </div>
+              </div>
             </div>
-            <div className="mt-2 flex-1 min-h-0 rounded border border-gray-800 overflow-hidden">
+            <div className="flex-1 min-h-0 rounded-lg border border-gray-800 overflow-hidden">
               <canvas ref={cpuCanvasRef} />
             </div>
           </div>
 
-          <div className="rounded border border-gray-800 bg-gray-900/30 p-3 flex flex-col min-h-0">
-            <div className="flex items-center justify-between shrink-0">
-              <div className="text-sm font-semibold">
-                WebGPU (GPU) — compute + instancing
+          <div className="rounded-xl border border-gray-700 bg-gray-900/50 p-4 flex flex-col min-h-0">
+            <div className="flex items-start justify-between shrink-0 mb-3">
+              <div>
+                <div className="text-xs uppercase tracking-widest text-gray-500 font-semibold">
+                  GPU · WebGPU
+                </div>
+                <div className="text-sm text-gray-500 mt-0.5">
+                  compute + instanced render
+                </div>
               </div>
-              <div className="text-xs text-gray-500">FPS: {gpuFps ?? "—"}</div>
+              <div className="text-right">
+                <div
+                  className={`text-4xl font-black tabular-nums leading-none ${gpuFps !== null ? "text-gray-100" : "text-gray-700"}`}
+                >
+                  {gpuFps ?? "—"}
+                </div>
+                <div className="text-xs text-gray-500 font-semibold uppercase tracking-wide mt-0.5">
+                  FPS
+                </div>
+              </div>
             </div>
-            <div className="mt-2 flex-1 min-h-0 rounded border border-gray-800 overflow-hidden">
+            <div className="flex-1 min-h-0 rounded-lg border border-gray-800 overflow-hidden">
               <canvas ref={gpuCanvasRef} />
             </div>
           </div>
         </div>
 
         {winnerBanner}
-
-        <div className="shrink-0 text-xs text-gray-500 leading-relaxed">
-          Tip: if results look suspiciously similar, verify both canvases have
-          identical <code>width/height</code> (after DPR scaling), and increase
-          the particle count until the CPU starts dropping frames.
-        </div>
       </div>
     </div>
   );
